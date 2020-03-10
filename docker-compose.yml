@@ -1,0 +1,65 @@
+version: '2'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.3.2
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ELASTICSEARCH_USERNAME=${KIBANA_USERNAME}
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+      - xpack.security.enabled=false
+    ports:
+      - "5601:5601"
+  influxdb:
+    image: influxdb:latest
+    ports:
+      - '8086:8086'
+    volumes:
+      - influxdb-storage:/var/lib/influxdb
+    environment:
+      - INFLUXDB_DB=_internal
+      - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME}
+      - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_PASSWORD}
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:6.5.1
+    ports:
+      - 8200:8200
+    environment:
+      - output.elasticsearch.hosts=['http://localhost:9200']
+      - apm-server.host="0.0.0.0:8200"
+      - apm-server.secret_token="xxVpmQB2HMzCL9PgBHVrnxjNXXw5J7bd79DFm6sjBJR5HPXDhcF8MSb3vv4bpg44"
+      - setup.kibana.host="kibana:5601"
+      - setup.template.enabled=true
+      - logging.to_files=false
+    depends_on:
+      - elasticsearch
+      - kibana
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana-provisioning/:/etc/grafana/provisioning
+    links:
+      - influxdb
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USERNAME}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+volumes:  
+  influxdb-storage:
+  grafana-storage:
