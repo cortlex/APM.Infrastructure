@@ -1,2 +1,3 @@
 # APM.Infrastructure
-APM.Infrastructure
+
+docker-compose up -d
