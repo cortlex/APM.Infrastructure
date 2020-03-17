@@ -2,6 +2,8 @@ version: '2'
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+    volumes:
+      - ./esdata:/usr/share/elasticsearch/data
     environment:
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
@@ -28,7 +30,7 @@ services:
     ports:
       - '8086:8086'
     volumes:
-      - influxdb-storage:/var/lib/influxdb
+      - /srv/docker/influxdb/data:/var/lib/influxdb
     environment:
       - INFLUXDB_DB=_internal
       - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME}
@@ -52,8 +54,7 @@ services:
     ports:
       - '3000:3000'
     volumes:
-      - grafana-storage:/var/lib/grafana
-      - ./grafana-provisioning/:/etc/grafana/provisioning
+      - /srv/docker/grafana/data:/var/lib/grafana
     links:
       - influxdb
     environment:
