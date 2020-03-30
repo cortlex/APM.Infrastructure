@@ -1,13 +1,12 @@
 version: '2'
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.1
     volumes:
-      - ./esdata:/usr/share/elasticsearch/data
+      - /usr/share/elasticsearch/data:/usr/share/elasticsearch/data
     environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - discovery.type=single-node
     ulimits:
       memlock:
         soft: -1
@@ -15,16 +14,15 @@ services:
     ports:
       - "9200:9200"
   kibana:
-    image: docker.elastic.co/kibana/kibana:6.3.2
+    image: docker.elastic.co/kibana/kibana:7.6.1
     environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - ELASTICSEARCH_USERNAME=${KIBANA_USERNAME}
       - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
-      - xpack.security.enabled=false
     ports:
       - "5601:5601"
+    depends_on:
+      - elasticsearch
   influxdb:
     image: influxdb:latest
     ports:
@@ -36,14 +34,12 @@ services:
       - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME}
       - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_PASSWORD}
   apm-server:
-    image: docker.elastic.co/apm/apm-server:6.5.1
+    image: docker.elastic.co/apm/apm-server:7.6.1
     ports:
       - 8200:8200
     environment:
-      - output.elasticsearch.hosts=['http://localhost:9200']
-      - apm-server.host="0.0.0.0:8200"
-      - apm-server.secret_token="xxVpmQB2HMzCL9PgBHVrnxjNXXw5J7bd79DFm6sjBJR5HPXDhcF8MSb3vv4bpg44"
-      - setup.kibana.host="kibana:5601"
+      - output.elasticsearch.hosts=['http://elasticsearch:9200']
+      - setup.kibana.host="http://kibana:5601"
       - setup.template.enabled=true
       - logging.to_files=false
     depends_on:
@@ -51,6 +47,7 @@ services:
       - kibana
   grafana:
     image: grafana/grafana:latest
+    user: "0"
     ports:
       - '3000:3000'
     volumes:
