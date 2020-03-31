@@ -1,6 +1,7 @@
 using System;
 using Cortlex.APM.Health.Publishers.InfluxDb;
 using Elastic.Apm.AspNetCore;
+using Elastic.Apm.NetCoreAll;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
@@ -57,13 +58,13 @@ namespace APM.Example
 
             services.AddHealthChecks()
                 .AddUrlGroup(new Uri("http://google.com/"))
-                .AddInfluxPublisher(Environment.ApplicationName, Environment.EnvironmentName, "http://localhost:8086", "admin", "admin");
+                .AddInfluxPublisher(Environment.ApplicationName, Environment.EnvironmentName, "http://<influx server IP>:8086", "admin", "admin");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            app.UseElasticApm();
+            app.UseAllElasticApm(Configuration);
             loggerFactory.AddSerilog();
 
             if (env.IsDevelopment())
