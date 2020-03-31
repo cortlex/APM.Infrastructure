@@ -28,7 +28,7 @@ services:
     ports:
       - '8086:8086'
     volumes:
-      - /srv/docker/influxdb/data:/var/lib/influxdb
+      - /usr/share/influxdb/data:/var/lib/influxdb
     environment:
       - INFLUXDB_DB=_internal
       - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME}
@@ -51,7 +51,7 @@ services:
     ports:
       - '3000:3000'
     volumes:
-      - /srv/docker/grafana/data:/var/lib/grafana
+      - /usr/share/grafana/data:/var/lib/grafana
     links:
       - influxdb
     environment:
