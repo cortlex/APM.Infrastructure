@@ -18,7 +18,7 @@ namespace APM.Example
                 .ConfigureMetricsWithDefaults(
                     builder =>
                     {
-                        builder.Report.ToInfluxDb("http://127.0.0.1:8086", "_internal");
+                        builder.Report.ToInfluxDb("http://<influx server IP>:8086", "_internal");
                     })
                 .UseMetrics()
                 .UseStartup<Startup>()
