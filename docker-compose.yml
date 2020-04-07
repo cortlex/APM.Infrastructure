@@ -5,8 +5,10 @@ services:
     volumes:
       - /usr/share/elasticsearch/data:/usr/share/elasticsearch/data
     environment:
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_USERNAME=${ELASTIC_STACK_USERNAME}
+      - ELASTIC_PASSWORD=${ELASTIC_STACK_PASSWORD}
       - discovery.type=single-node
+      - xpack.security.enabled=true
     ulimits:
       memlock:
         soft: -1
@@ -17,8 +19,9 @@ services:
     image: docker.elastic.co/kibana/kibana:7.6.1
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - ELASTICSEARCH_USERNAME=${KIBANA_USERNAME}
-      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+      - ELASTICSEARCH_USERNAME=${ELASTIC_STACK_USERNAME}
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_STACK_PASSWORD}
+      - xpack.security.enabled=true
     ports:
       - "5601:5601"
     depends_on:
@@ -52,6 +55,7 @@ services:
       - '3000:3000'
     volumes:
       - /usr/share/grafana/data:/var/lib/grafana
+      - /usr/share/grafana/config:/etc/grafana
     links:
       - influxdb
     environment:
